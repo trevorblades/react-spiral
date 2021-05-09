@@ -1,9 +1,12 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 
-export default function Spiral({sides, width, spacing, segments}) {
+function Spiral({sides, width, spacing, segments}) {
   const sumAngles = (sides - 2) * 180;
   const eachAngle = sumAngles / sides;
+  const radians = eachAngle * (Math.PI / 180);
+  const inset = Math.cos(radians) * spacing;
+  console.log(eachAngle, radians, inset, spacing);
   return (
     <div
       style={{
@@ -18,6 +21,7 @@ export default function Spiral({sides, width, spacing, segments}) {
         .reduce((child, value, index, array) => {
           const offset = array.length - index;
           const innerWidth = width - spacing * Math.max(offset - sides + 1, 0);
+          console.log(innerWidth, value);
           return (
             <div
               style={{
