@@ -1,17 +1,17 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 
-function Spiral({sides, width, spacing, segments}) {
+function Spiral({size, sides, spacing, segments}) {
   const centralAngle = (Math.PI * 2) / sides;
   const interiorAngle = Math.PI - centralAngle;
   const inset = Math.cos(interiorAngle) * spacing * 2;
-  const sideLength = (width / 2) * Math.sin(centralAngle / 2) * 2;
+  const sideLength = (size / 2) * Math.sin(centralAngle / 2) * 2;
   return (
     <div
       style={{
-        width,
-        height: width,
-        padding: `0 ${(width - sideLength) / 2}px`,
+        width: size,
+        height: size,
+        padding: `0 ${(size - sideLength) / 2}px`,
         overflow: 'hidden'
       }}
     >
@@ -45,7 +45,7 @@ function Spiral({sides, width, spacing, segments}) {
                   whiteSpace: 'pre',
                   justifyContent: 'space-evenly',
                   width: innerWidth,
-                  padding: `0 ${(innerWidth * (spacing / width)) / 2}px`,
+                  padding: `0 ${(innerWidth * (spacing / size)) / 2}px`,
                   backgroundColor: 'paleturquoise'
                 }}
               >
@@ -63,7 +63,7 @@ function Spiral({sides, width, spacing, segments}) {
 
 Spiral.propTypes = {
   sides: PropTypes.number.isRequired,
-  width: PropTypes.number.isRequired,
+  size: PropTypes.number.isRequired,
   spacing: PropTypes.number.isRequired,
   segments: PropTypes.arrayOf(PropTypes.node).isRequired
 };
