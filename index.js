@@ -14,7 +14,8 @@ function Spiral({size, sides, spacing, segments}) {
       style={{
         width: size,
         height: size,
-        padding: `${(size - height) / 2}px ${(size - sideLength) / 2}px`,
+        paddingTop: (size - height) / 2,
+        paddingLeft: (size - sideLength) / 2,
         overflow: 'hidden'
       }}
     >
