@@ -4,15 +4,12 @@ import React from 'react';
 function Spiral({sides, width, spacing, segments}) {
   const sumAngles = (sides - 2) * 180;
   const eachAngle = sumAngles / sides;
-  const radians = eachAngle * (Math.PI / 180);
-  const inset = Math.cos(radians) * spacing;
-  console.log(eachAngle, radians, inset, spacing);
+  const inset = Math.cos(eachAngle * (Math.PI / 180)) * spacing * 2;
   return (
     <div
       style={{
         width,
-        height: width,
-        overflow: 'hidden'
+        height: width
       }}
     >
       {segments
@@ -20,8 +17,17 @@ function Spiral({sides, width, spacing, segments}) {
         .reverse()
         .reduce((child, value, index, array) => {
           const offset = array.length - index;
-          const innerWidth = width - spacing * Math.max(offset - sides + 1, 0);
-          console.log(innerWidth, value);
+
+          const ahead = Math.floor(offset / sides);
+          const middle = Math.max(Math.floor((offset - 1) / sides), 0);
+          const behind = Math.max(Math.floor((offset - 2) / sides), 0);
+          const combined = ahead + behind;
+
+          const innerWidth = width - combined * spacing - inset * middle;
+          if (innerWidth < spacing) {
+            return null;
+          }
+
           return (
             <div
               style={{
@@ -37,7 +43,8 @@ function Spiral({sides, width, spacing, segments}) {
                   whiteSpace: 'pre',
                   justifyContent: 'space-evenly',
                   width: innerWidth,
-                  padding: `0 ${(innerWidth * (spacing / width)) / 2}px`
+                  padding: `0 ${(innerWidth * (spacing / width)) / 2}px`,
+                  backgroundColor: 'paleturquoise'
                 }}
               >
                 {value.split('').map((char, index) => (
