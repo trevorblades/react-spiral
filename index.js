@@ -3,15 +3,18 @@ import React from 'react';
 
 function Spiral({size, sides, spacing, segments}) {
   const centralAngle = (Math.PI * 2) / sides;
-  const interiorAngle = Math.PI - centralAngle;
-  const inset = Math.cos(interiorAngle) * spacing * 2;
-  const sideLength = (size / 2) * Math.sin(centralAngle / 2) * 2;
+  const circumradius = size / 2;
+  const sideLength = circumradius * Math.sin(centralAngle / 2) * 2;
+  const inset = Math.cos(Math.PI - centralAngle) * spacing * 2;
+  const inradius = Math.cos(centralAngle / 2) * circumradius;
+  const height = sides % 2 ? inradius + circumradius : inradius * 2;
+  const spacingRatio = spacing / size;
   return (
     <div
       style={{
         width: size,
         height: size,
-        padding: `0 ${(size - sideLength) / 2}px`,
+        padding: `${(size - height) / 2}px ${(size - sideLength) / 2}px`,
         overflow: 'hidden'
       }}
     >
@@ -35,7 +38,9 @@ function Spiral({size, sides, spacing, segments}) {
                 display: 'flex',
                 transformOrigin: 'left',
                 transform:
-                  side > 1 && `rotate(${centralAngle * (180 / Math.PI)}deg)`
+                  side > 1
+                    ? `rotate(${centralAngle * (180 / Math.PI)}deg)`
+                    : 'translateY(-50%)'
               }}
             >
               <span
@@ -45,8 +50,7 @@ function Spiral({size, sides, spacing, segments}) {
                   whiteSpace: 'pre',
                   justifyContent: 'space-evenly',
                   width: innerWidth,
-                  padding: `0 ${(innerWidth * (spacing / size)) / 2}px`,
-                  backgroundColor: 'paleturquoise'
+                  padding: `0 ${(innerWidth * spacingRatio) / 2}px`
                 }}
               >
                 {value.split('').map((char, index) => (
