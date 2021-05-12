@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "jsx": "react",
+    "lib": [
+      "dom",
+      "es2015"
+    ],
+    "esModuleInterop": true,
+    "declaration": true,
+    "rootDir": "src",
+    "outDir": "lib"
+  },
+  "files": [
+    "src/index.ts"
+  ]
+}

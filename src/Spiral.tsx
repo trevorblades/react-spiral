@@ -1,7 +1,15 @@
-import PropTypes from 'prop-types';
 import React from 'react';
 
-function getFeatures(size, sides, centralAngle) {
+interface Measurements {
+  height: number;
+  sideLength: number;
+}
+
+function measure(
+  size: number,
+  sides: number,
+  centralAngle: number
+): Measurements {
   if (sides % 2) {
     // odd number of sides
     const circumradius =
@@ -9,8 +17,8 @@ function getFeatures(size, sides, centralAngle) {
     const inradius = Math.cos(centralAngle / 2) * circumradius;
     const a = circumradius ** 2 * 2;
     return {
-      sideLength: Math.sqrt(a - a * Math.cos(centralAngle)),
-      height: inradius + circumradius
+      height: inradius + circumradius,
+      sideLength: Math.sqrt(a - a * Math.cos(centralAngle))
     };
   }
 
@@ -18,18 +26,27 @@ function getFeatures(size, sides, centralAngle) {
   const isHalfOdd = (sides / 2) % 2;
   const ratio = isHalfOdd ? Math.sin : Math.tan;
   return {
-    sideLength: radius * (ratio(centralAngle / 2) * 2),
-    height: (isHalfOdd ? Math.cos(centralAngle / 2) * radius : radius) * 2
+    height: (isHalfOdd ? Math.cos(centralAngle / 2) * radius : radius) * 2,
+    sideLength: radius * (ratio(centralAngle / 2) * 2)
   };
 }
 
-function Spiral({boxSize, fontSize, sides, spacing, segments}) {
+interface SpiralProps {
+  boxSize: number;
+  fontSize: number;
+  sides: number;
+  spacing: number;
+  segments: string[];
+}
+
+export const Spiral = (props: SpiralProps): JSX.Element => {
+  const {boxSize, fontSize, sides, spacing, segments} = props;
   const centralAngle = (Math.PI * 2) / sides;
   const interiorAngle = Math.PI - centralAngle;
   const inset = Math.cos(interiorAngle) * spacing * 2;
 
   const totalSize = boxSize - fontSize;
-  const {sideLength, height} = getFeatures(totalSize, sides, centralAngle);
+  const {height, sideLength} = measure(totalSize, sides, centralAngle);
   const spacingRatio = spacing / totalSize;
 
   return (
@@ -52,9 +69,9 @@ function Spiral({boxSize, fontSize, sides, spacing, segments}) {
         {segments
           .slice()
           .reverse()
-          .reduce((child, value, index, array) => {
+          .reduce((child: React.ReactNode, segment, index, array) => {
             const side = array.length - index;
-            const [a, b, c] = Array.from({length: 3}, (value, index) =>
+            const [a, b, c] = Array.from({length: 3}, (segment, index) =>
               Math.max(Math.floor((side - index) / sides), 0)
             );
             const innerWidth = sideLength - (a + c) * spacing - inset * b;
@@ -84,7 +101,7 @@ function Spiral({boxSize, fontSize, sides, spacing, segments}) {
                     padding: `0 ${(innerWidth * spacingRatio) / 2}px`
                   }}
                 >
-                  {value.split('').map((char, index) => (
+                  {segment.split('').map((char: string, index: number) => (
                     <span key={index}>{char}</span>
                   ))}
                 </span>
@@ -95,12 +112,4 @@ function Spiral({boxSize, fontSize, sides, spacing, segments}) {
       </div>
     </div>
   );
-}
-
-Spiral.propTypes = {
-  boxSize: PropTypes.number.isRequired,
-  fontSize: PropTypes.number.isRequired,
-  sides: PropTypes.number.isRequired,
-  spacing: PropTypes.number.isRequired,
-  segments: PropTypes.arrayOf(PropTypes.node).isRequired
 };
