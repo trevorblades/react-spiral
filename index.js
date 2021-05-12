@@ -23,25 +23,30 @@ function getFeatures(size, sides, centralAngle) {
   };
 }
 
-function Spiral({size, sides, spacing, segments}) {
+function Spiral({boxSize, fontSize, sides, spacing, segments}) {
   const centralAngle = (Math.PI * 2) / sides;
-  const {sideLength, height} = getFeatures(size, sides, centralAngle);
   const interiorAngle = Math.PI - centralAngle;
   const inset = Math.cos(interiorAngle) * spacing * 2;
-  const spacingRatio = spacing / size;
+
+  const totalSize = boxSize - fontSize;
+  const {sideLength, height} = getFeatures(totalSize, sides, centralAngle);
+  const spacingRatio = spacing / totalSize;
+
   return (
     <div
       style={{
         overflow: 'hidden',
-        padding: '0.5em'
+        lineHeight: 1,
+        fontSize,
+        padding: fontSize / 2
       }}
     >
       <div
         style={{
-          width: size,
-          height: size,
-          paddingTop: (size - height) / 2,
-          paddingLeft: (size - sideLength) / 2
+          width: totalSize,
+          height: totalSize,
+          paddingTop: (totalSize - height) / 2,
+          paddingLeft: (totalSize - sideLength) / 2
         }}
       >
         {segments
@@ -93,8 +98,9 @@ function Spiral({size, sides, spacing, segments}) {
 }
 
 Spiral.propTypes = {
+  boxSize: PropTypes.number.isRequired,
+  fontSize: PropTypes.number.isRequired,
   sides: PropTypes.number.isRequired,
-  size: PropTypes.number.isRequired,
   spacing: PropTypes.number.isRequired,
   segments: PropTypes.arrayOf(PropTypes.node).isRequired
 };
