@@ -6,3 +6,5 @@ shoutout:
 - law of cosines: https://courses.lumenlearning.com/suny-osalgebratrig/chapter/non-right-triangles-law-of-cosines/
 
 > The Law of Cosines states that the square of any side of a triangle is equal to the sum of the squares of the other two sides minus twice the product of the other two sides and the cosine of the included angle.
+
+Talk about how you can use well known mathematical equations to solve complex problems, if you know how to look for them. Break down the sequence of math principles learned at each step. Like how an equilateral triangle always has 60deg interior angles. Learning about how n-gons' sum of interior angles increases by 180deg for every additional side. Explain why that is (it's another triangle being added to the shape). Show with diagrams?
