@@ -36,6 +36,13 @@ function wordsFromText(text: string) {
   return text.trim().replace(/\s+/, ' ').split(' ');
 }
 
+interface Segment {
+  side: number;
+  width: number;
+  padding: number;
+  text: string;
+}
+
 interface SpiralProps {
   boxSize: number;
   fontSize: number;
@@ -58,7 +65,7 @@ export const Spiral = (props: SpiralProps): JSX.Element => {
   const inset = Math.cos(interiorAngle) * spacing * 2;
 
   let spaceRemaining = sideLength - spacing;
-  let words = wordsFromText(text);
+  const words = wordsFromText(text);
 
   while (spaceRemaining > 0) {
     const side = segments.length + 1;
@@ -73,29 +80,26 @@ export const Spiral = (props: SpiralProps): JSX.Element => {
     const padding = (outerWidth * spacingRatio) / 2;
     const innerWidth = outerWidth - padding * 2;
 
-    let chars = innerWidth / charWidth;
-
-    if (!words.length) {
-      words = wordsFromText(text);
-    }
-
+    // shift the first word off the stack and put it back at the end
     let segment = words.shift();
-    chars -= segment.length + 1;
+    words.push(segment);
 
+    // add 1 to account for space before next word
+    let chars = innerWidth / charWidth - (segment.length + 1);
     if (chars < 0) {
       break;
     }
 
     while (chars > 0) {
-      if (!words.length) {
-        words = wordsFromText(text);
-      }
-
       if (words[0].length > chars) {
         break;
       }
 
+      // shift and put back on end
       const word = words.shift();
+      words.push(word);
+
+      // update the segment and char count for that side
       segment += ' ' + word;
       chars -= word.length + 1;
     }
@@ -126,8 +130,9 @@ export const Spiral = (props: SpiralProps): JSX.Element => {
           paddingLeft: (totalSize - sideLength) / 2
         }}
       >
-        {segments.reduce(
-          (child: React.ReactNode, {side, segment, outerWidth, padding}) => (
+        {segments.reduce((child: React.ReactNode, segment: Segment) => {
+          const {side, width, padding, text} = segment;
+          return (
             <div
               style={{
                 display: 'flex',
@@ -144,19 +149,18 @@ export const Spiral = (props: SpiralProps): JSX.Element => {
                   display: 'flex',
                   whiteSpace: 'pre',
                   justifyContent: 'space-evenly',
-                  width: outerWidth,
+                  width,
                   padding: `0 ${padding}px`
                 }}
               >
-                {segment.split('').map((char: string, index: number) => (
+                {text.split('').map((char: string, index: number) => (
                   <span key={index}>{char}</span>
                 ))}
               </span>
               {child}
             </div>
-          ),
-          null
-        )}
+          );
+        }, null)}
       </div>
     </div>
   );
