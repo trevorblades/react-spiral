@@ -31,23 +31,87 @@ function measure(
   };
 }
 
+function wordsFromText(text: string) {
+  // replace all extra space and then split on spaces
+  return text.trim().replace(/\s+/, ' ').split(' ');
+}
+
+interface Segment {
+  side: number;
+  width: number;
+  padding: number;
+  text: string;
+}
+
 interface SpiralProps {
   boxSize: number;
   fontSize: number;
   sides: number;
   spacing: number;
-  segments: string[];
+  text: string;
 }
 
-export const Spiral = (props: SpiralProps): JSX.Element => {
-  const {boxSize, fontSize, sides, spacing, segments} = props;
+export function Spiral(props: SpiralProps): JSX.Element {
+  const {boxSize, fontSize, sides, spacing, text: source} = props;
   const centralAngle = (Math.PI * 2) / sides;
   const interiorAngle = Math.PI - centralAngle;
-  const inset = Math.cos(interiorAngle) * spacing * 2;
 
   const totalSize = boxSize - fontSize;
   const {height, sideLength} = measure(totalSize, sides, centralAngle);
+
+  const segments: Segment[] = [];
+  const charWidth = fontSize / 1.5; // 0.5em - same as 1ch
   const spacingRatio = spacing / totalSize;
+  const inset = Math.cos(interiorAngle) * spacing * 2;
+
+  let spaceRemaining = sideLength - spacing;
+  const words = wordsFromText(source);
+
+  while (spaceRemaining > 0) {
+    const side = segments.length + 1;
+
+    // get 3 different numbers that are offset by the index
+    const [a, b, c] = Array.from({length: 3}, (_, index) =>
+      Math.max(Math.floor((side - index) / sides), 0)
+    );
+
+    // calculate final side length
+    const outerWidth = sideLength - (a + c) * spacing - inset * b;
+    const padding = (outerWidth * spacingRatio) / 2;
+    const innerWidth = outerWidth - padding * 2;
+
+    // shift the first word off the stack and put it back at the end
+    let segment = words.shift();
+    words.push(segment);
+
+    // add 1 to account for space before next word
+    let chars = innerWidth / charWidth - (segment.length + 1);
+    if (chars < 0) {
+      break;
+    }
+
+    while (chars > 0) {
+      if (words[0].length > chars) {
+        break;
+      }
+
+      // shift and put back on end
+      const word = words.shift();
+      words.push(word);
+
+      // update the segment and char count for that side
+      segment += ' ' + word;
+      chars -= word.length + 1;
+    }
+
+    segments.unshift({
+      side,
+      padding,
+      text: segment,
+      width: outerWidth
+    });
+    spaceRemaining = outerWidth - spacing;
+  }
 
   return (
     <div
@@ -66,50 +130,38 @@ export const Spiral = (props: SpiralProps): JSX.Element => {
           paddingLeft: (totalSize - sideLength) / 2
         }}
       >
-        {segments
-          .slice()
-          .reverse()
-          .reduce((child: React.ReactNode, segment, index, array) => {
-            const side = array.length - index;
-            const [a, b, c] = Array.from({length: 3}, (segment, index) =>
-              Math.max(Math.floor((side - index) / sides), 0)
-            );
-            const innerWidth = sideLength - (a + c) * spacing - inset * b;
-
-            if (innerWidth < spacing) {
-              return null;
-            }
-
-            return (
-              <div
+        {segments.reduce((child: React.ReactNode, segment) => {
+          const {side, width, padding, text} = segment;
+          return (
+            <div
+              style={{
+                display: 'flex',
+                transformOrigin: 'left',
+                transform:
+                  side > 1
+                    ? `rotate(${centralAngle * (180 / Math.PI)}deg)`
+                    : 'translateY(-50%)'
+              }}
+            >
+              <span
                 style={{
+                  flexShrink: 0,
                   display: 'flex',
-                  transformOrigin: 'left',
-                  transform:
-                    side > 1
-                      ? `rotate(${centralAngle * (180 / Math.PI)}deg)`
-                      : 'translateY(-50%)'
+                  whiteSpace: 'pre',
+                  justifyContent: 'space-evenly',
+                  width,
+                  padding: `0 ${padding}px`
                 }}
               >
-                <span
-                  style={{
-                    flexShrink: 0,
-                    display: 'flex',
-                    whiteSpace: 'pre',
-                    justifyContent: 'space-evenly',
-                    width: innerWidth,
-                    padding: `0 ${(innerWidth * spacingRatio) / 2}px`
-                  }}
-                >
-                  {segment.split('').map((char: string, index: number) => (
-                    <span key={index}>{char}</span>
-                  ))}
-                </span>
-                {child}
-              </div>
-            );
-          }, null)}
+                {text.split('').map((char: string, index: number) => (
+                  <span key={index}>{char}</span>
+                ))}
+              </span>
+              {child}
+            </div>
+          );
+        }, null)}
       </div>
     </div>
   );
-};
+}
