@@ -51,21 +51,21 @@ interface SpiralProps {
   text: string;
 }
 
-export const Spiral = (props: SpiralProps): JSX.Element => {
-  const {boxSize, fontSize, sides, spacing, text} = props;
+export function Spiral(props: SpiralProps): JSX.Element {
+  const {boxSize, fontSize, sides, spacing, text: source} = props;
   const centralAngle = (Math.PI * 2) / sides;
   const interiorAngle = Math.PI - centralAngle;
 
   const totalSize = boxSize - fontSize;
   const {height, sideLength} = measure(totalSize, sides, centralAngle);
 
-  const segments = [];
+  const segments: Segment[] = [];
   const charWidth = fontSize / 1.5; // 0.5em - same as 1ch
   const spacingRatio = spacing / totalSize;
   const inset = Math.cos(interiorAngle) * spacing * 2;
 
   let spaceRemaining = sideLength - spacing;
-  const words = wordsFromText(text);
+  const words = wordsFromText(source);
 
   while (spaceRemaining > 0) {
     const side = segments.length + 1;
@@ -106,9 +106,9 @@ export const Spiral = (props: SpiralProps): JSX.Element => {
 
     segments.unshift({
       side,
-      segment,
-      outerWidth,
-      padding
+      padding,
+      text: segment,
+      width: outerWidth
     });
     spaceRemaining = outerWidth - spacing;
   }
@@ -130,7 +130,7 @@ export const Spiral = (props: SpiralProps): JSX.Element => {
           paddingLeft: (totalSize - sideLength) / 2
         }}
       >
-        {segments.reduce((child: React.ReactNode, segment: Segment) => {
+        {segments.reduce((child: React.ReactNode, segment) => {
           const {side, width, padding, text} = segment;
           return (
             <div
@@ -164,4 +164,4 @@ export const Spiral = (props: SpiralProps): JSX.Element => {
       </div>
     </div>
   );
-};
+}
