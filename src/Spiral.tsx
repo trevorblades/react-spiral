@@ -31,15 +31,9 @@ function measure(
   };
 }
 
-function wordsFromText(text: string) {
-  // replace all extra space and then split on spaces
-  return text.trim().replace(/\s+/, ' ').split(' ');
-}
-
 interface Segment {
   side: number;
   width: number;
-  padding: number;
   text: string;
 }
 
@@ -48,68 +42,112 @@ interface SpiralProps {
   fontSize: number;
   sides: number;
   spacing: number;
-  text: string;
+  children: string;
 }
 
 export function Spiral(props: SpiralProps): JSX.Element {
-  const {boxSize, fontSize, sides, spacing, text: source} = props;
+  const {boxSize, fontSize, sides, spacing, children} = props;
   const centralAngle = (Math.PI * 2) / sides;
   const interiorAngle = Math.PI - centralAngle;
 
   const totalSize = boxSize - fontSize;
   const {height, sideLength} = measure(totalSize, sides, centralAngle);
 
-  const segments: Segment[] = [];
   const charWidth = fontSize / 1.5; // 0.5em - same as 1ch
-  const spacingRatio = spacing / totalSize;
-  const inset = Math.cos(interiorAngle) * spacing * 2;
+  const basePadding = charWidth / 2; // base padding is half a character width
+
+  // we give progressively less padding to polygons with more than 4 sides
+  const paddingModifier = 4 / sides;
+  const padding = basePadding * paddingModifier;
+
+  // the distance needed to space out parallel lines appropriately
+  // this is the hypoteneuse of a triangle with an opposite side of `spacing`
+  const inset = spacing / Math.sin(interiorAngle);
+
+  // the amount needed to add or subtract from the outside of the shape
+  const multiplier = interiorAngle < centralAngle ? 2 : -2;
+  const outset = Math.sqrt(inset ** 2 - spacing ** 2) * multiplier;
+
+  const segments: Segment[] = [];
+
+  // replace all extra space and then split on spaces
+  const words = children
+    .trim()
+    .replace(/\s+/, ' ')
+    .split(' ')
+    .map(text => ({
+      text,
+      isOriginal: true // mark as original
+    }));
 
   let spaceRemaining = sideLength - spacing;
-  const words = wordsFromText(source);
-
   while (spaceRemaining > 0) {
     const side = segments.length + 1;
 
-    // get 3 different numbers that are offset by the index
+    // numbers needed to calculate the amount of insets and offsets required
+    // i = n / s + (n - 2) / s = a + c
+    // o = (n - 1) / s = b
     const [a, b, c] = Array.from({length: 3}, (_, index) =>
       Math.max(Math.floor((side - index) / sides), 0)
     );
 
-    // calculate final side length
-    const outerWidth = sideLength - (a + c) * spacing - inset * b;
-    const padding = (outerWidth * spacingRatio) / 2;
+    const totalInset = inset * (a + c);
+    const totalOutset = outset * b;
+    const outerWidth = sideLength - totalInset - totalOutset;
+
+    // account for padding on either side of the segment
     const innerWidth = outerWidth - padding * 2;
 
-    // shift the first word off the stack and put it back at the end
-    let segment = words.shift();
-    words.push(segment);
-
-    // add 1 to account for space before next word
-    let chars = innerWidth / charWidth - (segment.length + 1);
-    if (chars < 0) {
+    // calculate the number of characters that can fit in the segment
+    let chars = Math.floor(innerWidth / charWidth);
+    if (chars <= 0) {
       break;
     }
 
+    // fill the segment with text until all characters have been accounted for
+    let segment = '';
     while (chars > 0) {
-      if (words[0].length > chars) {
-        break;
+      // grab the first word
+      const word = words.shift();
+
+      // return it to the end of the stack if it's part of the original set
+      if (word.isOriginal) {
+        words.push(word);
       }
 
-      // shift and put back on end
-      const word = words.shift();
-      words.push(word);
-
-      // update the segment and char count for that side
-      segment += ' ' + word;
-      chars -= word.length + 1;
+      // if there isn't enough space for the full word
+      if (word.text.length > chars) {
+        // grab the part of it that will fit
+        const sub = word.text.slice(0, chars);
+        // and put the rest of it back into the front of the stack
+        words.unshift({
+          text: word.text.slice(chars),
+          isOriginal: false // mark as unoriginal
+        });
+        segment += sub;
+        chars -= sub.length;
+      } else {
+        // otherwise add the word to the segment
+        segment += word.text;
+        chars -= word.text.length;
+        if (chars > 1) {
+          // add a space if there's room
+          segment += ' ';
+          chars -= 1;
+        } else if (chars) {
+          // otherwise bail out and complete the segment
+          break;
+        }
+      }
     }
 
     segments.unshift({
       side,
-      padding,
       text: segment,
       width: outerWidth
     });
+
+    // FIXME: redundant with the break if chars <= 0
     spaceRemaining = outerWidth - spacing;
   }
 
@@ -131,7 +169,7 @@ export function Spiral(props: SpiralProps): JSX.Element {
         }}
       >
         {segments.reduce((child: React.ReactNode, segment) => {
-          const {side, width, padding, text} = segment;
+          const {side, width, text} = segment;
           return (
             <div
               style={{
