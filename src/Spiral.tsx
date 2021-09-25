@@ -45,6 +45,20 @@ interface SpiralProps {
   children: string;
 }
 
+export function calcInOutsets(
+  side: number,
+  numSides: number
+): [number, number] {
+  // key values needed to calculate the amount of insets and offsets required
+  const [a, b, c] = Array.from({length: 3}, (_, index) =>
+    Math.floor(Math.max(side - index, 0) / numSides)
+  );
+
+  const numInsets = a + c;
+  const numOutsets = 2 * b;
+  return [numInsets, numOutsets];
+}
+
 export function Spiral(props: SpiralProps): JSX.Element {
   const {boxSize, fontSize, sides, spacing, children} = props;
   const centralAngle = (Math.PI * 2) / sides;
@@ -65,8 +79,11 @@ export function Spiral(props: SpiralProps): JSX.Element {
   const inset = spacing / Math.sin(interiorAngle);
 
   // the amount needed to add or subtract from the outside of the shape
-  const multiplier = interiorAngle < centralAngle ? 2 : -2;
-  const outset = Math.sqrt(inset ** 2 - spacing ** 2) * multiplier;
+  let outset = Math.sqrt(inset ** 2 - spacing ** 2);
+  if (interiorAngle < centralAngle) {
+    // triangles subtract outsets, polygons with > 4 sides add outsets
+    outset *= -1;
+  }
 
   const segments: Segment[] = [];
 
@@ -84,16 +101,8 @@ export function Spiral(props: SpiralProps): JSX.Element {
   while (spaceRemaining > 0) {
     const side = segments.length + 1;
 
-    // numbers needed to calculate the amount of insets and offsets required
-    // i = n / s + (n - 2) / s = a + c
-    // o = (n - 1) / s = b
-    const [a, b, c] = Array.from({length: 3}, (_, index) =>
-      Math.max(Math.floor((side - index) / sides), 0)
-    );
-
-    const totalInset = inset * (a + c);
-    const totalOutset = outset * b;
-    const outerWidth = sideLength - totalInset - totalOutset;
+    const [numInsets, numOutsets] = calcInOutsets(side, sides);
+    const outerWidth = sideLength - inset * numInsets - outset * numOutsets;
 
     // account for padding on either side of the segment
     const innerWidth = outerWidth - padding * 2;
@@ -176,9 +185,7 @@ export function Spiral(props: SpiralProps): JSX.Element {
                 display: 'flex',
                 transformOrigin: 'left',
                 transform:
-                  side > 1
-                    ? `rotate(${centralAngle * (180 / Math.PI)}deg)`
-                    : 'translateY(-50%)'
+                  side > 1 ? `rotate(${centralAngle}rad)` : 'translateY(-50%)'
               }}
             >
               <span
