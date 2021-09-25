@@ -80,7 +80,7 @@ export function Spiral(props: SpiralProps): JSX.Element {
 
   // the amount needed to add or subtract from the outside of the shape
   let outset = Math.sqrt(inset ** 2 - spacing ** 2);
-  if (interiorAngle < centralAngle) {
+  if (interiorAngle > centralAngle) {
     // triangles subtract outsets, polygons with > 4 sides add outsets
     outset *= -1;
   }
@@ -97,12 +97,15 @@ export function Spiral(props: SpiralProps): JSX.Element {
       isOriginal: true // mark as original
     }));
 
-  let spaceRemaining = sideLength - spacing;
-  while (spaceRemaining > 0) {
+  while (sideLength > inset) {
     const side = segments.length + 1;
 
     const [numInsets, numOutsets] = calcInOutsets(side, sides);
     const outerWidth = sideLength - inset * numInsets - outset * numOutsets;
+
+    if (outerWidth < inset) {
+      break;
+    }
 
     // account for padding on either side of the segment
     const innerWidth = outerWidth - padding * 2;
@@ -155,9 +158,6 @@ export function Spiral(props: SpiralProps): JSX.Element {
       text: segment,
       width: outerWidth
     });
-
-    // FIXME: redundant with the break if chars <= 0
-    spaceRemaining = outerWidth - spacing;
   }
 
   return (
