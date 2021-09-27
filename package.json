@@ -17,7 +17,7 @@
     "react": ">=15"
   },
   "devDependencies": {
-    "@trevorblades/eslint-config": "^7.2.2",
+    "@trevorblades/eslint-config": "^7.2.5",
     "@types/react": "^17.0.5",
     "eslint": "^7.26.0",
     "react": "^17.0.2",
