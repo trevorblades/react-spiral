@@ -31,20 +31,6 @@ export function measureShape(
   };
 }
 
-interface Segment {
-  side: number;
-  width: number;
-  text: string;
-}
-
-interface SpiralProps {
-  boxSize: number;
-  fontSize: number;
-  sides: number;
-  spacing: number;
-  children: string;
-}
-
 export function calcInOutset(
   spacing: number,
   centralAngle: number
@@ -77,6 +63,20 @@ export function getNumInOutsets(
   const numInsets = a + c;
   const numOutsets = 2 * b;
   return [numInsets, numOutsets];
+}
+
+interface Segment {
+  side: number;
+  width: number;
+  text: string;
+}
+
+interface SpiralProps {
+  boxSize: number;
+  fontSize: number;
+  sides: number;
+  spacing: number;
+  children: string;
 }
 
 export function Spiral(props: SpiralProps): JSX.Element {
