@@ -1,1 +1,1 @@
-export {Spiral as default, calcInOutsets} from './Spiral';
+export {Spiral as default, calcInOutset, getNumInOutsets} from './Spiral';

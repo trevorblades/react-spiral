@@ -5,7 +5,7 @@ interface Measurements {
   sideLength: number;
 }
 
-function measure(
+export function measureShape(
   size: number,
   sides: number,
   centralAngle: number
@@ -45,7 +45,27 @@ interface SpiralProps {
   children: string;
 }
 
-export function calcInOutsets(
+export function calcInOutset(
+  spacing: number,
+  centralAngle: number
+): [number, number] {
+  const interiorAngle = Math.PI - centralAngle;
+
+  // the distance needed to space out parallel lines appropriately
+  // this is the hypoteneuse of a triangle with an opposite side of `spacing`
+  const inset = spacing / Math.sin(interiorAngle);
+
+  // the amount needed to add or subtract from the outside of the shape
+  let outset = Math.sqrt(inset ** 2 - spacing ** 2);
+  if (interiorAngle > centralAngle) {
+    // triangles subtract outsets, polygons with > 4 sides add outsets
+    outset *= -1;
+  }
+
+  return [inset, outset];
+}
+
+export function getNumInOutsets(
   side: number,
   numSides: number
 ): [number, number] {
@@ -62,10 +82,10 @@ export function calcInOutsets(
 export function Spiral(props: SpiralProps): JSX.Element {
   const {boxSize, fontSize, sides, spacing, children} = props;
   const centralAngle = (Math.PI * 2) / sides;
-  const interiorAngle = Math.PI - centralAngle;
 
   const totalSize = boxSize - fontSize;
-  const {height, sideLength} = measure(totalSize, sides, centralAngle);
+  const {height, sideLength} = measureShape(totalSize, sides, centralAngle);
+  const [inset, outset] = calcInOutset(spacing, centralAngle);
 
   const charWidth = fontSize / 1.5; // 0.5em - same as 1ch
   const basePadding = charWidth / 2; // base padding is half a character width
@@ -74,33 +94,22 @@ export function Spiral(props: SpiralProps): JSX.Element {
   const paddingModifier = 4 / sides;
   const padding = basePadding * paddingModifier;
 
-  // the distance needed to space out parallel lines appropriately
-  // this is the hypoteneuse of a triangle with an opposite side of `spacing`
-  const inset = spacing / Math.sin(interiorAngle);
-
-  // the amount needed to add or subtract from the outside of the shape
-  let outset = Math.sqrt(inset ** 2 - spacing ** 2);
-  if (interiorAngle > centralAngle) {
-    // triangles subtract outsets, polygons with > 4 sides add outsets
-    outset *= -1;
-  }
-
   const segments: Segment[] = [];
 
   // replace all extra space and then split on spaces
   const words = children
-    .trim()
-    .replace(/\s+/, ' ')
-    .split(' ')
+    .trim() // trim leading/trailing space
+    .replace(/\s+/, ' ') // turn one or more consecutive spaces into one space
+    .split(' ') // split into array of words
     .map(text => ({
       text,
-      isOriginal: true // mark as original
+      isFullWord: true // mark as full word
     }));
 
   while (sideLength > inset) {
     const side = segments.length + 1;
 
-    const [numInsets, numOutsets] = calcInOutsets(side, sides);
+    const [numInsets, numOutsets] = getNumInOutsets(side, sides);
     const outerWidth = sideLength - inset * numInsets - outset * numOutsets;
 
     if (outerWidth < inset) {
@@ -111,42 +120,42 @@ export function Spiral(props: SpiralProps): JSX.Element {
     const innerWidth = outerWidth - padding * 2;
 
     // calculate the number of characters that can fit in the segment
-    let chars = Math.floor(innerWidth / charWidth);
-    if (chars <= 0) {
+    let numChars = Math.floor(innerWidth / charWidth);
+    if (numChars <= 0) {
       break;
     }
 
     // fill the segment with text until all characters have been accounted for
-    let segment = '';
-    while (chars > 0) {
+    let text = '';
+    while (numChars > 0) {
       // grab the first word
       const word = words.shift();
 
-      // return it to the end of the stack if it's part of the original set
-      if (word.isOriginal) {
+      // return it to the end of the stack if it's a full word
+      if (word.isFullWord) {
         words.push(word);
       }
 
       // if there isn't enough space for the full word
-      if (word.text.length > chars) {
+      if (word.text.length > numChars) {
         // grab the part of it that will fit
-        const sub = word.text.slice(0, chars);
+        const fragment = word.text.slice(0, numChars);
         // and put the rest of it back into the front of the stack
         words.unshift({
-          text: word.text.slice(chars),
-          isOriginal: false // mark as unoriginal
+          text: word.text.slice(numChars),
+          isFullWord: false // not a full word
         });
-        segment += sub;
-        chars -= sub.length;
+        text += fragment;
+        numChars -= fragment.length;
       } else {
         // otherwise add the word to the segment
-        segment += word.text;
-        chars -= word.text.length;
-        if (chars > 1) {
+        text += word.text;
+        numChars -= word.text.length;
+        if (numChars > 1) {
           // add a space if there's room
-          segment += ' ';
-          chars -= 1;
-        } else if (chars) {
+          text += ' ';
+          numChars -= 1;
+        } else if (numChars) {
           // otherwise bail out and complete the segment
           break;
         }
@@ -155,7 +164,7 @@ export function Spiral(props: SpiralProps): JSX.Element {
 
     segments.unshift({
       side,
-      text: segment,
+      text,
       width: outerWidth
     });
   }
