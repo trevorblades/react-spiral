@@ -72,7 +72,7 @@ interface Segment {
 }
 
 interface SpiralProps {
-  size: number;
+  boxSize: number;
   fontSize: number;
   sides: number;
   spacing: number;
@@ -80,10 +80,10 @@ interface SpiralProps {
 }
 
 export function Spiral(props: SpiralProps): JSX.Element {
-  const {size, fontSize, sides, spacing, children} = props;
+  const {boxSize, fontSize, sides, spacing, children} = props;
   const centralAngle = useMemo(() => (Math.PI * 2) / sides, [sides]);
 
-  const totalSize = useMemo(() => size - fontSize, [size, fontSize]);
+  const totalSize = useMemo(() => boxSize - fontSize, [boxSize, fontSize]);
   const {height, sideLength} = useMemo(
     () => measureShape(totalSize, sides, centralAngle),
     [totalSize, sides, centralAngle]
@@ -108,22 +108,18 @@ export function Spiral(props: SpiralProps): JSX.Element {
     return basePadding * paddingModifier;
   }, [basePadding, sides]);
 
-  // replace all extra space and then split on spaces
-  const words = useMemo(
-    () =>
-      children
-        .trim() // trim leading/trailing space
-        .replace(/\s+/, ' ') // turn one or more consecutive spaces into one space
-        .split(' ') // split into array of words
-        .map(text => ({
-          text,
-          isFullWord: true // mark as full word
-        })),
-    [children]
-  );
-
   const segments = useMemo(() => {
     const segments: Segment[] = [];
+
+    const words = children
+      .trim() // trim leading/trailing space
+      .replace(/\s+/, ' ') // turn one or more consecutive spaces into one space
+      .split(' ') // split into array of words
+      .map(text => ({
+        text,
+        isFullWord: true // mark as full word
+      }));
+
     while (sideLength > inset) {
       const side = segments.length + 1;
 
@@ -187,7 +183,7 @@ export function Spiral(props: SpiralProps): JSX.Element {
       });
     }
     return segments;
-  }, [sideLength, charWidth, inset, outset, padding, sides, words]);
+  }, [sideLength, charWidth, inset, outset, padding, sides, children]);
 
   return (
     <div
