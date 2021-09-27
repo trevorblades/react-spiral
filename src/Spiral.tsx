@@ -113,8 +113,7 @@ export function Spiral(props: SpiralProps): JSX.Element {
 
     const words = children
       .trim() // trim leading/trailing space
-      .replace(/\s+/, ' ') // turn one or more consecutive spaces into one space
-      .split(' ') // split into array of words
+      .split(/\s+/) // split into array of words
       .map(text => ({
         text,
         isFullWord: true // mark as full word
