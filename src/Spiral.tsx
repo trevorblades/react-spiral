@@ -5,16 +5,20 @@ interface Measurements {
   sideLength: number;
 }
 
+// TODO: test this
 export function measureShape(
   size: number,
   sides: number,
   centralAngle: number
 ): Measurements {
+  const halfCentralAngle = centralAngle / 2;
+  const cosine = Math.cos(halfCentralAngle);
+
   if (sides % 2) {
     // odd number of sides
     const circumradius =
       size / Math.sin(((sides - 1) / (sides * 2)) * Math.PI) / 2;
-    const inradius = Math.cos(centralAngle / 2) * circumradius;
+    const inradius = circumradius * cosine;
     const a = circumradius ** 2 * 2;
     return {
       height: inradius + circumradius,
@@ -22,15 +26,17 @@ export function measureShape(
     };
   }
 
-  const radius = size / 2;
+  const halfSize = size / 2;
   const isHalfOdd = (sides / 2) % 2;
   const ratio = isHalfOdd ? Math.sin : Math.tan;
+  const inradius = isHalfOdd ? halfSize * cosine : halfSize;
   return {
-    height: (isHalfOdd ? Math.cos(centralAngle / 2) * radius : radius) * 2,
-    sideLength: radius * (ratio(centralAngle / 2) * 2)
+    height: inradius * 2,
+    sideLength: halfSize * ratio(halfCentralAngle) * 2
   };
 }
 
+// TODO: test this
 export function calcInOutset(
   spacing: number,
   centralAngle: number
@@ -89,10 +95,10 @@ export function Spiral(props: SpiralProps): JSX.Element {
     [totalSize, sides, centralAngle]
   );
 
-  const [inset, outset] = useMemo(() => calcInOutset(spacing, centralAngle), [
-    spacing,
-    centralAngle
-  ]);
+  const [inset, outset] = useMemo(
+    () => calcInOutset(spacing, centralAngle),
+    [spacing, centralAngle]
+  );
 
   const [charWidth, basePadding] = useMemo(() => {
     const charWidth = fontSize / 1.5;
