@@ -1,6 +1,6 @@
 {
   "name": "react-spiral",
-  "version": "1.0.14",
+  "version": "1.0.15",
   "description": "A React component that renders text in a spiral shape",
   "author": "Trevor Blades <tdblades@gmail.com> (trevorblades.com)",
   "repository": "trevorblades/react-spiral",
