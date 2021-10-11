@@ -31,7 +31,7 @@ function MyComponent() {
 All of the following props are required
 
 | Name | Description | More info |
-| - | - |
+| - | - | - |
 | sides | The number of sides that the shape has | A triangle has 3 sides, a square has 4, a pentagon has 5, and so on |
 | text | The text to be rendered in the spiral | The text will continue to repeat itself until there's no room left |
 | boxSize | The size, in pixels, of the square that the spiral will be rendered within | |
