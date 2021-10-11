@@ -1,10 +1,43 @@
-shoutout:
-- https://www.mathsisfun.com/geometry/interior-angles-polygons.html
-- https://educationisaround.com/sohcahtoa/
-- right triangle with two equal sides: http://www.math.com/school/subject3/lessons/S3U3L4DP.html#:~:text=A%20right%20triangle%20can%20also,that%20is%20an%20isosceles%20triangle.
-- bounding box of ngon: http://calcresource.com/geom-ngon.html
-- law of cosines: https://courses.lumenlearning.com/suny-osalgebratrig/chapter/non-right-triangles-law-of-cosines/
+# react-spiral
 
-> The Law of Cosines states that the square of any side of a triangle is equal to the sum of the squares of the other two sides minus twice the product of the other two sides and the cosine of the included angle.
+This React component renders a spiral of text. You choose the shape and the size of the spiral, and the component takes care of the rest.
 
-Talk about how you can use well known mathematical equations to solve complex problems, if you know how to look for them. Break down the sequence of math principles learned at each step. Like how an equilateral triangle always has 60deg interior angles. Learning about how n-gons' sum of interior angles increases by 180deg for every additional side. Explain why that is (it's another triangle being added to the shape). Show with diagrams?
+## Installation
+
+```bash
+npm i react-spiral
+```
+
+## Usage
+
+```jsx
+import Spiral from 'react-spiral';
+
+function MyComponent() {
+  return (
+    <Spiral
+      sides={3}
+      text="i'm a spiral"
+      boxSize={500}
+      fontSize={30}
+      spacing={20}
+    />
+  );
+}
+```
+
+## Configuration
+
+All of the following props are required
+
+| Name | Description | More info |
+| - | - |
+| sides | The number of sides that the shape has | A triangle has 3 sides, a square has 4, a pentagon has 5, and so on |
+| text | The text to be rendered in the spiral | The text will continue to repeat itself until there's no room left |
+| boxSize | The size, in pixels, of the square that the spiral will be rendered within | |
+| fontSize | The size of the font, in pixels | |
+| spacing | The amount of space between parallel lines in the spiral | |
+
+## Further reading
+
+If you're interested to learn how this component works, I wrote [a blog post](https://trevorblades.com/lab/spiral-into-madness) explaining all of the techniques that were involved in its creation. I learned a ton about math and trigonometry in the process, and I hope I can share some of my learnings in a digestible way. There's also a few interactive demos in there that are pretty fun to play with. 😊
