@@ -17,11 +17,12 @@ function MyComponent() {
   return (
     <Spiral
       sides={3}
-      text="i'm a spiral"
       boxSize={500}
       fontSize={30}
       spacing={20}
-    />
+    >
+      I'm a spiral
+    </Spiral>
   );
 }
 ```
@@ -33,7 +34,7 @@ All of the following props are required to properly render a spiral:
 | Name | Type | Description |
 | - | - | - |
 | sides | number | The number of sides that the shape has. A triangle has 3 sides, a square has 4, a pentagon has 5, and so on. |
-| text | string | The text to be rendered in the spiral. The text will continue to repeat itself until there's no room left. |
+| children | string | The text to be rendered in the spiral. The text will continue to repeat itself until there's no room left. |
 | boxSize | number | The size, in pixels, of the square that the spiral will be rendered within |
 | fontSize | number | The size of the font, in pixels |
 | spacing | number | The amount of space, in pixels, between parallel lines in the spiral |
